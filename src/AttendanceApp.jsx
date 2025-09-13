@@ -68,7 +68,7 @@ export default function AttendanceApp() {
         <div className="grid grid-cols-6 gap-y-2 gap-x-2">
           {items.map((s, idx) => {
             const col = idx % 6;
-            const extraStyle = col % 2 === 1 ? "mr-3" : "";
+            const extraStyle = col % 2 === 1 ? "mr-1" : "ml-1";
             const skinClass = s?.skin ? (skinMap[s.skin] || "bg-white") : "bg-white";
             const titleClass = s?.titleColor ? (titleMap[s.titleColor] || titleMap.black) : titleMap.black;
 
