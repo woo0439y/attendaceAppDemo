@@ -5,7 +5,7 @@ const cors = require("cors");
 const path = require("path");
 
 const app = express();
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -325,6 +325,6 @@ app.get("/api/export/:year/:month", async (req, res) => {
 
 
 // 서버 시작
-app.listen(PORT, () => {
-  console.log(`Backend listening on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0' , () => {
+  console.log(`Backend listening on http://0.0.0.0:${PORT}`);
 });
