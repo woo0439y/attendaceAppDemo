@@ -1,0 +1,9 @@
+npm run dev 사이트 실행
+
+git init
+git add .
+git commit -m "message"
+git remote add origin 주소
+git push origin master
+
+rm -rf .git/
