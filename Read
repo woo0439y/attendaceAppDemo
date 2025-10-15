@@ -4,6 +4,6 @@ git init
 git add .
 git commit -m "message"
 git remote add origin 주소
-git push origin master
+git push origin master --force
 
 rm -rf .git/

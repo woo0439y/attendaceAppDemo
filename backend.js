@@ -228,7 +228,22 @@ app.get("/api/attendance/:studentId", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
+app.get("/api/today-attendance", async (req, res) => {
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    const rows = await allAsync(`
+      SELECT st.id, st.name, st.points, st.skin, st.title, att.time, att.status, s.seat_index
+      FROM attendance att
+      JOIN students st ON att.student_id = st.id
+      JOIN seating s ON st.id = s.student_id
+      WHERE att.date = ?
+      ORDER BY att.time ASC
+    `, [today]);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // === 상점 API ===
 app.get("/api/items", async (req, res) => {

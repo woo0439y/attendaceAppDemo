@@ -1,13 +1,15 @@
-// src/AttendanceApp.jsx
 import React, { useEffect, useState } from "react";
 import Shop from "./Shop.jsx";
 import Admin from "./Admin.jsx";
+import Today from "./today.jsx";
 
 export default function AttendanceApp() {
-  const [seating, setSeating] = useState([]); // seat_index, student_id, name, points, skin, title, titleColor
+  const [seating, setSeating] = useState([]); // 좌석 정보
   const [message, setMessage] = useState("");
-  const [view, setView] = useState("seating"); // seating | shop | admin
+  const [view, setView] = useState("seating"); // seating | shop | admin | today
+  const [todayList, setTodayList] = useState([]);
 
+  // 좌석 정보 불러오기
   async function loadSeating() {
     try {
       const r = await fetch("/api/seating");
@@ -18,10 +20,26 @@ export default function AttendanceApp() {
     }
   }
 
+  // 오늘 출석 정보 불러오기
+  async function loadTodayAttendance() {
+    try {
+      const r = await fetch("/api/today-attendance");
+      const data = await r.json();
+      setTodayList(data);
+    } catch {
+      setMessage("오늘 출석 현황을 불러오지 못했습니다.");
+    }
+  }
+
   useEffect(() => {
     loadSeating();
   }, []);
 
+  useEffect(() => {
+    if (view === "today") loadTodayAttendance();
+  }, [view]);
+
+  // 출석 처리
   async function handleAttendance(seat) {
     setMessage("");
     if (!seat.student_id) return setMessage("빈 자리입니다.");
@@ -40,7 +58,7 @@ export default function AttendanceApp() {
     }
   }
 
-  // 스킨별 배경색/그라데이션
+  // 스킨별 배경색
   const skinMap = {
     desk_red: "bg-gradient-to-r from-red-400 to-red-700",
     desk_blue: "bg-gradient-to-r from-blue-400 to-blue-700",
@@ -49,16 +67,17 @@ export default function AttendanceApp() {
     desk_gold: "bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-600",
   };
 
-  // 칭호별 색/글꼴/그라데이션
+  // 칭호별 색상
   const titleMap = {
     gold: "bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-600 font-bold",
     red: "text-red-600 font-semibold",
     blue: "text-blue-600 italic",
     green: "text-green-600",
     gray: "text-gray-500",
+    black: "",
   };
 
-  // 좌석 6x6 그리드 + 세로 2열씩 간격
+  // 좌석표 렌더링
   function renderGrid() {
     const items = [...seating];
     while (items.length < 36) items.push({ seat_index: items.length, student_id: null });
@@ -96,25 +115,24 @@ export default function AttendanceApp() {
   return (
     <div className="max-w-5xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">출석 & 상점 시스템</h1>
-
       <div className="flex gap-2 mb-4">
         <button className={`px-3 py-1 rounded ${view==="seating"?"bg-blue-600 text-white":"bg-white"}`} onClick={()=>setView("seating")}>좌석표</button>
         <button className={`px-3 py-1 rounded ${view==="shop"?"bg-blue-600 text-white":"bg-white"}`} onClick={()=>setView("shop")}>상점</button>
         <button className={`px-3 py-1 rounded ${view==="admin"?"bg-blue-600 text-white":"bg-white"}`} onClick={()=>setView("admin")}>관리자</button>
+        <button className={`px-3 py-1 rounded ${view==="today"?"bg-blue-600 text-white":"bg-white"}`} onClick={()=>setView("today")}>오늘 출석 현황</button>
       </div>
-
       {view === "seating" && (
         <>
           {renderGrid()}
           <div className="mt-3 text-sm text-gray-700">{message}</div>
           <div className="mt-4 text-xs text-gray-500">
-            안내: 좌석을 눌러 출석 처리합니다. (8:25 이전 100P, 8:40 이전 50P, 이후 지각)
+            안내: 좌석을 눌러 출석 처리합니다. (8:25 이전 100P, 8:40 이전 50P, 이후 지각 10P, 결석 0P)
           </div>
         </>
       )}
-
       {view === "shop" && <Shop onDone={loadSeating} />}
       {view === "admin" && <Admin onUpdated={loadSeating} />}
+      {view === "today" && <Today seating={seating} />}
     </div>
   );
 }
